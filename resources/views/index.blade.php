@@ -6,38 +6,96 @@
     <title>TMS</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body, html {
-            height: 100%; 
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+    body, html {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+    }
+
+    h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    table {
+        border-collapse: collapse;
+        font-size: 1rem;
+        text-align: left;
+        margin-bottom: 1rem;
+    }
+
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .text-left {
+        text-align: left;
+    }
+
+    /* Adjust Bootstrap classes */
+    .btn {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.75rem;
+    }
+
+    .form-control {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    .modal-body {
+        font-size: 0.875rem;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .container {
+            width: 95%;
         }
+        
         h2 {
-            margin-bottom: 20px;
+            font-size: 1.5rem;
         }
+        
         table {
-            width: 80%; /* Changed width for better display */
-            border-collapse: collapse;
-            font-size: 18px;
-            text-align: left;
-            margin-bottom: 20px;
+            font-size: 0.875rem;
         }
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
+        
+        .btn {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
         }
-        th {
-            background-color: #f2f2f2;
+        
+        .form-control {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
         }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        .text-left {
-            text-align: left;
-        }
-    </style>
+    }
+
+
+    footer {
+        background-color: #f8f9fa;
+        color: #333;
+        padding: 1rem 0;
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+</style>
 </head>
 <body>
     <h2>Time Management System</h2>
@@ -61,28 +119,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <!-- Search and Count -->
         <div class="row align-items-center mb-3">
+            
         <div class="col">
                 <h5> <span style="color: #DC3545;">Total Users Logged: <span id="userCount">{{ $loggedUsersCount }} / {{ $totalUsers }}</span></span> </h5>
         </div>
-        <div class="col-auto">
+       
+<div class="col-auto">
+    <div class="input-group mb-3">
+        <label for="recordsPerPage" class="form-label  mb-2">Records per page:</label>
+        <select id="recordsPerPage" class="form-select ms-2" aria-label="Records per page">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
+</div>
+<div class="col-auto">
         <div class="input-group mb-3"> 
         <span class="input-group-text" id="search-addon">
         <i class="fas fa-search"></i>
         </span>
-        <input type="text" id="searchUserInput" class="form-control" placeholder="Search user..." aria-label="Search user" aria-describedby="search-addon"> 
+        <input type="text" id="searchUserInput" class="form-control" placeholder="Search user..." aria-label="Search user" aria-describedby="search-addon">
     </div>  
-    </div>
+   
 </div>
-       <!--  <div class="col-auto">
-            Add here
-        </div>
-        <div class="col-auto">
-            Add here
-        </div> -->
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <table class="table table-bordered" id="userTable" class="table">
-    
         <thead>
             <tr>
                 <th>First Name</th>
@@ -98,6 +162,7 @@
                         <i class="fas fa-sync-alt"></i> <!-- Font Awesome reload icon -->
                     </button>
                 </th>
+                <th> Time Remaining </th>
             </tr>
         </thead>
             <tbody>
@@ -113,7 +178,8 @@
                                 @else
                                     <button class="btn btn-success btn-login-logout" data-user-id="{{ $user->id }}">Login</button>
                                 @endif
-                                <button class="btn btn-warning btn-assign-hours"> Assign Hours  </button>
+                                <button class="btn btn-warning btn-assign-hours" data-target="#assignHours"  data-toggle="modal" data-first-name="{{ $user->first_name }}" 
+                                data-last-name="{{ $user->last_name }}" > Assign Hours  </button>
                             </td>
                             <td class="time-in">{{ $user->login_time == NULL ? "Not In" : "$user->login_time" }}</td> 
                             <td class="time-out">{{ $user->logout_time == NULL ? "Not Out" : "$user->logout_time" }}</td>
@@ -129,11 +195,18 @@
                                    N/A
                                 @endif
                             </td>
+                            <td> </td>
                             <td><button class="btn btn-danger btn-delete-user" data-user-id="{{ $user->id }}">Delete User</button></td>
+                            
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
     </table>
+
+            <footer class="text-center mt-4">
+            <p>© Yevgeny A.</p>
+            </footer>
 
     <!-- Add Users Modal -->
     <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
@@ -172,6 +245,28 @@
             </div>
         </div>
     </div>
+
+  <!-- Assign Hours Modal -->
+  <div class="modal fade" id="assignHours" tabindex="-1" role="dialog" aria-labelledby="assignHoursLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignHoursLabel">Assign Hours </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+                    <div class="modal-body">
+            Input Custom Hours:
+                <input type="text" id="customHRS" class="form-control" placeholder="Hours" aria-label="Custom Hours" aria-describedby="search-addon">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Import Users Modal -->
     <div class="modal fade" id="importUserModal" tabindex="-1" aria-labelledby="importUserModalLabel" aria-hidden="true">
@@ -374,12 +469,11 @@
     });
 
     function filterUsers(query) {
-        let userCount = 0; // Initialize a counter for the visible users
+       
         
         // Check if the query is empty
         if (query === '') {
             $('#userTable tbody tr').show(); // Show all rows if the search query is empty
-            $('#userCount').text($('#userTable tbody tr').length + ' / ' + $('#userTable tbody tr').length);
             return; // Exit the function early
         }
 
@@ -399,14 +493,12 @@
 
             if (isMatch) {
                 row.show(); // Show the row if it matches or if the user is logged in
-                userCount++; // Increment counter
             } else {
                 row.hide(); // Hide the row if it doesn't match
             }
         });
 
-        // Update the user count display
-        $('#userCount').text(userCount + ' / ' + $('#userTable tbody tr').length);
+
     }
 });
     </script>
@@ -456,6 +548,67 @@
                 });
             });
         </script>
+
+    <script>
+        $(document).ready(function() {
+            // Store the total number of logged-in users
+            const totalRows = $('#userTable tbody tr').length;
+            // Event listener for the records per page dropdown
+            $('#recordsPerPage').change(function() {
+                const recordsPerPage = parseInt($(this).val());
+                // Hide all rows first
+                $('#userTable tbody tr').hide();
+                // Show the selected number of rows
+                $('#userTable tbody tr').slice(0, recordsPerPage).show();
+            });
+            // Trigger the change event on page load to show the initial records
+            $('#recordsPerPage').change();
+        });
+    </script>
+
+<script>
+    $(document).ready(function() {
+        // When the modal is about to be shown
+        $('#assignHours').on('show.bs.modal', function(event) {
+            const button = $(event.relatedTarget); // Button that triggered the modal
+            const firstName = button.data('first-name'); // Extract info from data-* attributes
+            const lastName = button.data('last-name');
+
+            // Update the modal's title
+            const modal = $(this);
+            modal.find('.modal-title').text(`Assign Hours ${firstName} ${lastName}`);
+        });
+    });
+</script>
+
+<script>
+        $(document).ready(function() {
+            function adjustLayout() {
+                const container = $('.container');
+                let width = window.innerWidth;
+                
+                // Adjust layout based on screen size
+                if (width <= 576) {
+                    // Extra small devices
+                    container.removeClass('container').addClass('container-fluid');
+                } else if (width <= 768) {
+                    // Small devices
+                    container.removeClass('container-fluid').addClass('container');
+                } else {
+                    // Medium and up devices
+                    container.addClass('container');
+                }
+            }
+
+            // Initial adjustment
+            adjustLayout();
+
+            // Resize event listener
+            $(window).resize(function() {
+                adjustLayout();
+            });
+        });
+    </script>
 
 </body>
 </html>
