@@ -1,0 +1,19 @@
+if fields doesn't exist
+Create it directly in MySQL shell 
+
+accessors:
+
+mysql -u root
+USE timemgmtsystem;
+ALTER TABLE users
+ADD COLUMN first_name VARCHAR(255) NOT NULL,
+ADD COLUMN last_name VARCHAR(255) NOT NULL,
+ADD COLUMN email VARCHAR(255) UNIQUE NOT NULL,
+ADD COLUMN phone_number VARCHAR(15) NOT NULL,
+ADD COLUMN login_time VARCHAR(255) DEFAULT NULL,
+ADD COLUMN logout_time VARCHAR(255) DEFAULT NULL;
+
+deletion: 
+ALTER TABLE users
+DROP COLUMN login_time,
+DROP COLUMN logout_time;
