@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController; 
-use App\Http\Controllers\UserImportController; 
+use App\Http\Controllers\UserImportController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,5 +20,9 @@ Route::post('/login', [UserController::class, 'login'])->name('user.login');
 Route::post('/logout', [UserController::class, 'logout'])->name('user.logout');
 
 Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('user.delete');
+
+
+Route::get('/get-time-logged/{userId}', [UserController::class, 'getTimeLogged'])->name('get.time.logged');
+
 
 

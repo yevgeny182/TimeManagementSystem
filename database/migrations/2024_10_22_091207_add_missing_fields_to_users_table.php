@@ -12,13 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            if (Schema::hasColumn('users', 'email_verified_at')) {
-                $table->dropColumn('email_verified_at');
-            }
-
-            if (Schema::hasColumn('users', 'remember_token')) {
-                $table->dropColumn('remember_token');
-            }
+            $table->string('first_name')->nullable();    // Add first name column
+            $table->string('last_name')->nullable();     // Add last name column
+            $table->string('email')->unique();           // Add email column, set as unique
+            $table->string('phone_number')->nullable();  // Add phone number column
         });
     }
 
@@ -28,8 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('remember_token')->nullable();
+            $table->dropColumn(['first_name', 'last_name', 'email', 'phone_number']);  // Drop columns on rollback
         });
     }
 };

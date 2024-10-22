@@ -34,6 +34,9 @@
         tr:hover {
             background-color: #f5f5f5;
         }
+        .text-left {
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -53,9 +56,33 @@
         <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#importUserModal">
             Import Users
         </button>
-    </div>
 
-    <table class="table table-bordered">
+    </div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <!-- Search and Count -->
+        <div class="row align-items-center mb-3">
+        <div class="col">
+                <h5> <span style="color: #DC3545;">Total Users Logged: <span id="userCount">{{ $loggedUsersCount }} / {{ $totalUsers }}</span></span> </h5>
+        </div>
+        <div class="col-auto">
+        <div class="input-group mb-3"> 
+        <span class="input-group-text" id="search-addon">
+        <i class="fas fa-search"></i>
+        </span>
+        <input type="text" id="searchUserInput" class="form-control" placeholder="Search user..." aria-label="Search user" aria-describedby="search-addon"> 
+    </div>  
+    </div>
+</div>
+       <!--  <div class="col-auto">
+            Add here
+        </div>
+        <div class="col-auto">
+            Add here
+        </div> -->
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <table class="table table-bordered" id="userTable" class="table">
+    
         <thead>
             <tr>
                 <th>First Name</th>
@@ -65,28 +92,47 @@
                 <th>Actions</th>
                 <th>Time In</th>
                 <th>Time Out</th>
+                <th>
+                    Time Logged 
+                    <button id="refreshTimeLogged" class="btn btn-link btn-sm" title="Refresh">
+                        <i class="fas fa-sync-alt"></i> <!-- Font Awesome reload icon -->
+                    </button>
+                </th>
             </tr>
         </thead>
-        <tbody>
-    @foreach($users as $user)
-        <tr>
-            <td>{{ $user->first_name }}</td>
-            <td>{{ $user->last_name }}</td>
-            <td>{{ $user->email }}</td>
-            <td>{{ $user->phone_number }}</td>
-            <td>
-                @if(session('user_' . $user->id))
-                    <button class="btn btn-danger btn-login-logout" data-user-id="{{ $user->id }}">Logout</button>
-                @else
-                    <button class="btn btn-success btn-login-logout" data-user-id="{{ $user->id }}">Login</button>
-                @endif
-            </td>
-            <td class="time-in">{{ $user->login_time == NULL ? "Not In" : "$user->login_time" }}</td> 
-            <td class="time-out">{{ $user->logout_time == NULL ? "Not Out" : "$user->logout_time" }}</td>
-            <td>  <button class="btn btn-danger btn-delete-user" data-user-id="{{ $user->id }}">Delete User</button> </td>
-        </tr>
-    @endforeach
-</tbody>
+            <tbody>
+                    @foreach($users as $user)
+                        <tr>
+                            <td class="user-first-name">{{ $user->first_name }}</td>
+                            <td class="user-last-name">{{ $user->last_name }}</td>
+                            <td class="user-email">{{ $user->email }}</td>
+                            <td class="user-phone">{{ $user->phone_number }}</td>
+                            <td>
+                                @if(session('user_' . $user->id))
+                                    <button class="btn btn-danger btn-login-logout" data-user-id="{{ $user->id }}">Logout</button>
+                                @else
+                                    <button class="btn btn-success btn-login-logout" data-user-id="{{ $user->id }}">Login</button>
+                                @endif
+                                <button class="btn btn-warning btn-assign-hours"> Assign Hours  </button>
+                            </td>
+                            <td class="time-in">{{ $user->login_time == NULL ? "Not In" : "$user->login_time" }}</td> 
+                            <td class="time-out">{{ $user->logout_time == NULL ? "Not Out" : "$user->logout_time" }}</td>
+                            <td class="time-logged" data-user-id="{{ $user->id }}">
+                                @if($user->login_time && $user->logout_time)
+                                    <?php
+                                        $timeIn = \Carbon\Carbon::parse($user->login_time);
+                                        $timeOut = \Carbon\Carbon::parse($user->logout_time);
+                                        $diff = $timeIn->diff($timeOut);
+                                    ?>
+                                    {{ $diff->h }} hour(s) {{ $diff->i }} minutes
+                                @else
+                                   N/A
+                                @endif
+                            </td>
+                            <td><button class="btn btn-danger btn-delete-user" data-user-id="{{ $user->id }}">Delete User</button></td>
+                        </tr>
+                    @endforeach
+                </tbody>
     </table>
 
     <!-- Add Users Modal -->
@@ -138,7 +184,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('import.users') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('import.users') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="form-group">
                             <label for="file">Select Excel File</label>
@@ -151,7 +197,7 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
@@ -177,9 +223,15 @@
                         if (action === 'login') {
                             button.text('Logout').removeClass('btn-success').addClass('btn-danger');
                             button.closest('tr').find('.time-in').text(response.login_time); // Update time-in directly
+
+                            let loggedInCount = parseInt($('#userCount').text().split(' / ')[0]);
+                            $('#userCount').text((loggedInCount + 1) + ' / {{ $totalUsers }}');
+
                         } else {
                             button.text('Login').removeClass('btn-danger').addClass('btn-success');
                             button.closest('tr').find('.time-out').text(response.logout_time); // Update time-out directly
+                            let loggedInCount = parseInt($('#userCount').text().split(' / ')[0]);
+                            $('#userCount').text((loggedInCount - 1) + ' / {{ $totalUsers }}');
                         }
 
                     }
@@ -191,17 +243,43 @@
             });
         });
 
-
-
-      
-
     </script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteUserModalLabel">Confirm Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this user?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script>
     $(document).on('click', '.btn-delete-user', function() {
         let button = $(this);
         let userId = button.data('user-id');
 
-        if (confirm('Are you sure you want to delete this user?')) {
+        // Show the modal
+        $('#deleteUserModal').modal('show');
+
+        // Handle the deletion when the user clicks "Delete" in the modal
+        $('#confirmDelete').off('click').on('click', function() {
             // Define the correct URL using Laravel's route helper
             let url = '{{ route('user.delete', '') }}/' + userId; // Correct usage
 
@@ -214,20 +292,170 @@
                 success: function(response) {
                     if (response.status === 'success') {
                         button.closest('tr').remove(); // Remove the user row from the table
-                        alert('User deleted successfully.'); // Optional: Show success message
+                        let userCount = parseInt($('#userCount').text())
+                        $('#userCount').text(userCount - 1);
+                        
+                        // Optional: Show a success toast or alert message
+                        Swal.fire({
+                            toast: true,
+                            icon: 'success',
+                            title: 'User deleted successfully',
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                        });
                     } else {
-                        alert('Error deleting user: ' + response.message);
+                        Swal.fire({
+                            toast: true,
+                            icon: 'error',
+                            title: 'Error deleting user: ' + response.message,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                        });
                     }
+                    // Close the modal after the AJAX request completes
+                    $('#deleteUserModal').modal('hide');
                 },
                 error: function(xhr, status, error) {
                     console.error('Error Status:', status);
                     console.error('Error Response:', xhr.responseText);
+                    
+                    Swal.fire({
+                        toast: true,
+                        icon: 'error',
+                        title: 'Error occurred during deletion.',
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                    });
+                    // Close the modal on error
+                    $('#deleteUserModal').modal('hide');
                 }
             });
-        }
+        });
     });
 </script>
 
+<script>
+    $(document).ready(function() {
+        $('.btn-login-logout').click(function() {
+            const userId = $(this).data('user-id');
+
+            // Send an AJAX request to log the user out
+            $.ajax({
+                url: `/logout/${userId}`,
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}' // Include CSRF token
+                },
+                success: function(response) {
+                    // Update the UI with the new logout time and time logged
+                    $(`.time-out[data-user-id="${userId}"]`).text(response.logout_time);
+                    $(`.time-logged[data-user-id="${userId}"]`).text(response.time_logged);
+                },
+                error: function(xhr) {
+                    console.error(xhr);
+                }
+            });
+        });
+    });
+</script>
+        <script>
+ $(document).ready(function () {
+    // Event listener for the search input
+    $('#searchUserInput').on('input', function () {
+        const searchQuery = $(this).val().toLowerCase(); // Get the search input value and convert to lowercase
+        // Filter the user data
+        filterUsers(searchQuery);
+    });
+
+    function filterUsers(query) {
+        let userCount = 0; // Initialize a counter for the visible users
+        
+        // Check if the query is empty
+        if (query === '') {
+            $('#userTable tbody tr').show(); // Show all rows if the search query is empty
+            $('#userCount').text($('#userTable tbody tr').length + ' / ' + $('#userTable tbody tr').length);
+            return; // Exit the function early
+        }
+
+        $('#userTable tbody tr').each(function () {
+            const row = $(this);
+            const firstName = row.find('td:nth-child(1)').text().toLowerCase(); // Get first name
+            const lastName = row.find('td:nth-child(2)').text().toLowerCase(); // Get last name
+            const email = row.find('td:nth-child(3)').text().toLowerCase(); // Get email
+            const phone = row.find('td:nth-child(4)').text().toLowerCase(); // Get phone number
+
+            // Exact match checks for the search query
+            const isMatch =
+                firstName === query || 
+                lastName === query || 
+                email === query || 
+                phone === query;
+
+            if (isMatch) {
+                row.show(); // Show the row if it matches or if the user is logged in
+                userCount++; // Increment counter
+            } else {
+                row.hide(); // Hide the row if it doesn't match
+            }
+        });
+
+        // Update the user count display
+        $('#userCount').text(userCount + ' / ' + $('#userTable tbody tr').length);
+    }
+});
+    </script>
+
+        <script>
+            $(document).ready(function() {
+                $('.btn-login-logout').click(function() {
+                    const userId = $(this).data('user-id');
+
+                    // Send an AJAX request to log the user out
+                    $.ajax({
+                        url: `/logout/${userId}`,
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}' // Include CSRF token
+                        },
+                        success: function(response) {
+                            // Update the UI with the new logout time and time logged
+                            $(`.time-out[data-user-id="${userId}"]`).text(response.logout_time);
+                            $(`.time-logged[data-user-id="${userId}"]`).text(response.time_logged);
+                        },
+                        error: function(xhr) {
+                            console.error('Logout Error:', xhr);
+                        }
+                    });
+                });
+
+                // Refresh button functionality
+                $('#refreshTimeLogged').click(function() {
+                    // Loop through each user row to get their ID
+                    $('#userTable tbody tr').each(function() {
+                        const userId = $(this).find('.time-logged').data('user-id');
+
+                        // Send an AJAX request to get updated time logged for each user
+                        $.ajax({
+                            url: `/get-time-logged/${userId}`,
+                            type: 'GET',
+                            success: function(response) {
+                                // Update the time logged cell with the new data
+                                $(`.time-logged[data-user-id="${userId}"]`).text(response.time_logged);
+                            },
+                            error: function(xhr) {
+                                console.error('Time Logged Fetch Error:', xhr);
+                            }
+                        });
+                    });
+                });
+            });
+        </script>
 
 </body>
 </html>

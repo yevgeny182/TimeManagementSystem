@@ -3,17 +3,18 @@
 namespace App\Imports;
 
 use App\Models\User;
-use Maatwebsite\Excel\Concerns\ToModel;
 
-class UsersImport implements ToModel
+class UsersImport
 {
-    public function model(array $row)
+    public function createUsers(array $rows)
     {
-        return new User([
-            'last_name' => $row[0],
-            'first_name' => $row[1],
-            'email' => $row[2],
-            'phone' => $row[3],
-        ]);
+        foreach ($rows as $row) {
+            User::create([
+                'last_name' => $row[0],
+                'first_name' => $row[1],
+                'email' => $row[2],
+                'phone_number' => $row[3], // Make sure this matches your User model
+            ]);
+        }
     }
 }
