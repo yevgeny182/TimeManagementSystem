@@ -3,99 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMS</title>
+    <title>Time Management System</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-    body, html {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-    .container {
-        max-width: 1200px;
-        margin: 20px auto;
-    }
-
-    h2 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-    }
-    table {
-        border-collapse: collapse;
-        font-size: 1rem;
-        text-align: left;
-        margin-bottom: 1rem;
-    }
-
-    th, td {
-        padding: 12px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th {
-        background-color: #f2f2f2;
-    }
-
-    tr:hover {
-        background-color: #f5f5f5;
-    }
-
-    .text-left {
-        text-align: left;
-    }
-
-    /* Adjust Bootstrap classes */
-    .btn {
-        font-size: 0.875rem;
-        padding: 0.25rem 0.75rem;
-    }
-
-    .form-control {
-        font-size: 0.875rem;
-        padding: 0.375rem 0.75rem;
-    }
-
-    .modal-body {
-        font-size: 0.875rem;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .container {
-            width: 95%;
-        }
-        
-        h2 {
-            font-size: 1.5rem;
-        }
-        
-        table {
-            font-size: 0.875rem;
-        }
-        
-        .btn {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-        }
-        
-        .form-control {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-        }
-    }
-
-
-    footer {
-        background-color: #f8f9fa;
-        color: #333;
-        padding: 1rem 0;
-        text-align: center;
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-    }
-</style>
+    <link rel="stylesheet" href="{{ asset('styles.css') }}">
 </head>
 <body>
     <h2>Time Management System</h2>
@@ -196,8 +106,9 @@
                                 @endif
                             </td>
                             <td> </td>
-                            <td><button class="btn btn-danger btn-delete-user" data-user-id="{{ $user->id }}">Delete User</button></td>
-                            
+                            <td><button class="btn btn-danger btn-delete-user" data-user-id="{{ $user->id }}" data-first-name="{{ $user->first_name }}" 
+                                data-last-name="{{ $user->last_name }}" data-bs-target="#deleteUserModal" data-bs-toggle="modal">Delete User</button></td>
+
                         </tr>
                     @endforeach
                 </tbody>
@@ -247,26 +158,26 @@
     </div>
 
   <!-- Assign Hours Modal -->
-  <div class="modal fade" id="assignHours" tabindex="-1" role="dialog" aria-labelledby="assignHoursLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="assignHoursLabel">Assign Hours </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-                    <div class="modal-body">
-            Input Custom Hours:
-                <input type="text" id="customHRS" class="form-control" placeholder="Hours" aria-label="Custom Hours" aria-describedby="search-addon">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+        <div class="modal fade" id="assignHours" tabindex="-1" role="dialog" aria-labelledby="assignHoursLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="assignHoursLabel">Assign Hours </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                            <div class="modal-body">
+                    Input Custom Hours:
+                        <input type="text" id="customHRS" class="form-control" placeholder="Hours" aria-label="Custom Hours" aria-describedby="search-addon">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
     <!-- Import Users Modal -->
     <div class="modal fade" id="importUserModal" tabindex="-1" aria-labelledby="importUserModalLabel" aria-hidden="true">
@@ -291,6 +202,25 @@
             </div>
         </div>
     </div>
+
+            <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteUserModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this user?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+            </div>
+        </div>
+        </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
@@ -345,26 +275,6 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteUserModalLabel">Confirm Deletion</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Are you sure you want to delete this user?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 <script>
     $(document).on('click', '.btn-delete-user', function() {
         let button = $(this);
@@ -387,8 +297,7 @@
                 success: function(response) {
                     if (response.status === 'success') {
                         button.closest('tr').remove(); // Remove the user row from the table
-                        let userCount = parseInt($('#userCount').text())
-                        $('#userCount').text(userCount - 1);
+                        $('#userCount').text(response.loggedUsersCount + ' / ' + response.totalUsers);
                         
                         // Optional: Show a success toast or alert message
                         Swal.fire({
@@ -576,9 +485,23 @@
 
             // Update the modal's title
             const modal = $(this);
-            modal.find('.modal-title').text(`Assign Hours ${firstName} ${lastName}`);
+            modal.find('.modal-title').text(`Assign Hours to: [${firstName} ${lastName}]`);
+        });
+   
+
+    $('#deleteUserModal').on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget); // Button that triggered the modal
+        const firstName = button.data('first-name'); // Extract first name from data-* attribute
+        const lastName = button.data('last-name');   // Extract last name from data-* attribute
+
+        // Update the modal's title
+        const modal = $(this);
+
+        modal.find('.modal-title').html(`<span style="color: orange;">⚠️</span> Delete User? <span style="color: red;">[${firstName} ${lastName}]</span>`);
+        modal.find('.modal-body').html(`Are you sure you want to remove user: <span style="color: red;">[${firstName} ${lastName}]?</span>`);
         });
     });
+
 </script>
 
 <script>
