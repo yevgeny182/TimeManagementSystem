@@ -5,87 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Management System</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-    body, html {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-    .container {
-        max-width: 1200px;
-        margin: 20px auto;
-    }
-
-    h2 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-    }
-    table {
-        border-collapse: collapse;
-        font-size: 1rem;
-        text-align: left;
-        margin-bottom: 1rem;
-    }
-
-    th, td {
-        padding: 12px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th {
-        background-color: #f2f2f2;
-    }
-
-    tr:hover {
-        background-color: #f5f5f5;
-    }
-
-    .text-left {
-        text-align: left;
-    }
-
-    /* Adjust Bootstrap classes */
-    .btn {
-        font-size: 0.875rem;
-        padding: 0.25rem 0.75rem;
-    }
-
-    .form-control {
-        font-size: 0.875rem;
-        padding: 0.375rem 0.75rem;
-    }
-
-    .modal-body {
-        font-size: 0.875rem;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .container {
-            width: 95%;
-        }
-        
-        h2 {
-            font-size: 1.5rem;
-        }
-        
-        table {
-            font-size: 0.875rem;
-        }
-        
-        .btn {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-        }
-        
-        .form-control {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-        }
-    }
-
-</style>
+    <link rel="stylesheet" href="{{ asset('styles.css') }}">
 </head>
 <body>
     <h2>Time Management System</h2>
@@ -238,26 +158,26 @@
     </div>
 
   <!-- Assign Hours Modal -->
-  <div class="modal fade" id="assignHours" tabindex="-1" role="dialog" aria-labelledby="assignHoursLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="assignHoursLabel">Assign Hours </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-                    <div class="modal-body">
-            Input Custom Hours:
-                <input type="text" id="customHRS" class="form-control" placeholder="Hours" aria-label="Custom Hours" aria-describedby="search-addon">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+        <div class="modal fade" id="assignHours" tabindex="-1" role="dialog" aria-labelledby="assignHoursLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="assignHoursLabel">Assign Hours </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                            <div class="modal-body">
+                    Input Custom Hours:
+                        <input type="text" id="customHRS" class="form-control" placeholder="Hours" aria-label="Custom Hours" aria-describedby="search-addon">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
     <!-- Import Users Modal -->
     <div class="modal fade" id="importUserModal" tabindex="-1" aria-labelledby="importUserModalLabel" aria-hidden="true">
@@ -354,10 +274,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
-
 
 <script>
     $(document).on('click', '.btn-delete-user', function() {
