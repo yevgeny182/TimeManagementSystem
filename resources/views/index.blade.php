@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMS</title>
+    <title>Time Management System</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
     body, html {
@@ -85,16 +85,6 @@
         }
     }
 
-
-    footer {
-        background-color: #f8f9fa;
-        color: #333;
-        padding: 1rem 0;
-        text-align: center;
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-    }
 </style>
 </head>
 <body>
@@ -196,8 +186,9 @@
                                 @endif
                             </td>
                             <td> </td>
-                            <td><button class="btn btn-danger btn-delete-user" data-user-id="{{ $user->id }}">Delete User</button></td>
-                            
+                            <td><button class="btn btn-danger btn-delete-user" data-user-id="{{ $user->id }}" data-first-name="{{ $user->first_name }}" 
+                                data-last-name="{{ $user->last_name }}" data-bs-target="#deleteUserModal" data-bs-toggle="modal">Delete User</button></td>
+
                         </tr>
                     @endforeach
                 </tbody>
@@ -292,6 +283,25 @@
         </div>
     </div>
 
+            <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteUserModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this user?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+            </div>
+        </div>
+        </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -345,24 +355,8 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteUserModalLabel">Confirm Deletion</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Are you sure you want to delete this user?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
-      </div>
-    </div>
-  </div>
-</div>
+
+
 
 
 <script>
@@ -387,8 +381,7 @@
                 success: function(response) {
                     if (response.status === 'success') {
                         button.closest('tr').remove(); // Remove the user row from the table
-                        let userCount = parseInt($('#userCount').text())
-                        $('#userCount').text(userCount - 1);
+                        $('#userCount').text(response.loggedUsersCount + ' / ' + response.totalUsers);
                         
                         // Optional: Show a success toast or alert message
                         Swal.fire({
@@ -576,9 +569,23 @@
 
             // Update the modal's title
             const modal = $(this);
-            modal.find('.modal-title').text(`Assign Hours ${firstName} ${lastName}`);
+            modal.find('.modal-title').text(`Assign Hours to: [${firstName} ${lastName}]`);
+        });
+   
+
+    $('#deleteUserModal').on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget); // Button that triggered the modal
+        const firstName = button.data('first-name'); // Extract first name from data-* attribute
+        const lastName = button.data('last-name');   // Extract last name from data-* attribute
+
+        // Update the modal's title
+        const modal = $(this);
+
+        modal.find('.modal-title').html(`<span style="color: orange;">⚠️</span> Delete User? <span style="color: red;">[${firstName} ${lastName}]</span>`);
+        modal.find('.modal-body').html(`Are you sure you want to remove user: <span style="color: red;">[${firstName} ${lastName}]?</span>`);
         });
     });
+
 </script>
 
 <script>

@@ -89,14 +89,35 @@ class UserController extends Controller
     ]);
 }
 
-    public function destroy($id){
-        $user = User::find($id);
-        if ($user) {
-            $user->delete();
-            return response()->json(['status' => 'success', 'message' => 'User deleted successfully.'], 200);
+public function destroy($id, Request $request){
+    $user = User::find($id);
+    if ($user) {
+        // Decrement total users
+        $totalUsers = User::count() - 1;
+        // Get the current logged-in users count from the session
+        $loggedUsersCount = session()->get('loggedUsersCount', 0);
+        // Check if the deleted user is currently logged in based on session
+        if ($request->session()->has('user_' . $user->id)) {
+            // Decrement the logged-in users count if the user was logged in
+            $loggedUsersCount -= 1;
         }
-        return response()->json(['status' => 'error', 'message' => 'User not found.'], 404);
+        // Delete the user
+        $user->delete();
+        // Update the session with the new logged users count
+        session()->put('loggedUsersCount', $loggedUsersCount);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User deleted successfully.',
+            'totalUsers' => $totalUsers,
+            'loggedUsersCount' => $loggedUsersCount
+        ], 200);
     }
+
+    return response()->json(['status' => 'error', 'message' => 'User not found.'], 404);
+}
+
+
 
     public function importUsers(Request $request) {
         $request->validate([
