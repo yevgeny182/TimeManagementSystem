@@ -6,6 +6,9 @@
     <title>Time Management System</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ asset('externalscripts.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
     <h2>Time Management System</h2>
@@ -13,6 +16,13 @@
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
+        </div>
+    @endif
+
+
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
         </div>
     @endif
 
@@ -75,25 +85,30 @@
                 <th> Time Remaining </th>
             </tr>
         </thead>
-            <tbody>
-                    @foreach($users as $user)
-                        <tr>
-                            <td class="user-first-name">{{ $user->first_name }}</td>
-                            <td class="user-last-name">{{ $user->last_name }}</td>
-                            <td class="user-email">{{ $user->email }}</td>
-                            <td class="user-phone">{{ $user->phone_number }}</td>
-                            <td>
-                                @if(session('user_' . $user->id))
-                                    <button class="btn btn-danger btn-login-logout" data-user-id="{{ $user->id }}">Logout</button>
-                                @else
-                                    <button class="btn btn-success btn-login-logout" data-user-id="{{ $user->id }}">Login</button>
-                                @endif
-                                <button class="btn btn-warning btn-assign-hours" data-target="#assignHours"  data-toggle="modal" data-first-name="{{ $user->first_name }}" 
-                                data-last-name="{{ $user->last_name }}" > Assign Hours  </button>
-                            </td>
-                            <td class="time-in">{{ $user->login_time == NULL ? "Not In" : "$user->login_time" }}</td> 
-                            <td class="time-out">{{ $user->logout_time == NULL ? "Not Out" : "$user->logout_time" }}</td>
-                            <td class="time-logged" data-user-id="{{ $user->id }}">
+                    <tbody>
+                @foreach($users as $user)
+                    <tr>
+                        <td class="user-first-name">{{ $user->first_name }}</td>
+                        <td class="user-last-name">{{ $user->last_name }}</td>
+                        <td class="user-email">{{ $user->email }}</td>
+                        <td class="user-phone">{{ $user->phone_number }}</td>
+                        <td>
+                            @if(session('user_' . $user->id))
+                                <button class="btn btn-danger btn-login-logout" data-user-id="{{ $user->id }}">Logout</button>
+                            @else
+                                <button class="btn btn-success btn-login-logout" data-user-id="{{ $user->id }}">Login</button>
+                            @endif
+                            <button class="btn btn-warning btn-assign-hours" data-target="#assignHours" data-toggle="modal" 
+                            data-first-name="{{ $user->first_name }}" data-last-name="{{ $user->last_name }}" data-user-id="{{ $user->id }}"
+                            > Assign Hours </button>
+                        </td>
+                        <td class="time-in">{{ $user->login_time == NULL ? "Not In" : "$user->login_time" }}</td>
+                        <td class="time-out">{{ $user->logout_time == NULL ? "Not Out" : "$user->logout_time" }}</td>
+                        <td class="time-logged" data-user-id="{{ $user->id }}">
+                            @if(session('user_' . $user->id))
+                                <!-- If the user is currently logged in, display N/A or leave empty -->
+                                N/A
+                            @else
                                 @if($user->login_time && $user->logout_time)
                                     <?php
                                         $timeIn = \Carbon\Carbon::parse($user->login_time);
@@ -102,17 +117,19 @@
                                     ?>
                                     {{ $diff->h }} hour(s) {{ $diff->i }} minutes
                                 @else
-                                   N/A
+                                N/A
                                 @endif
-                            </td>
-                            <td> </td>
-                            <td><button class="btn btn-danger btn-delete-user" data-user-id="{{ $user->id }}" data-first-name="{{ $user->first_name }}" 
-                                data-last-name="{{ $user->last_name }}" data-bs-target="#deleteUserModal" data-bs-toggle="modal">Delete User</button></td>
+                            @endif
+                        </td>
+                        <td> {{$user->time_remaining == NULL ? "No hours assigned" : "$user->time_remaining"}} </td>
+                        <td>
+                            <button class="btn btn-danger btn-delete-user" data-user-id="{{ $user->id }}" data-first-name="{{ $user->first_name }}" data-last-name="{{ $user->last_name }}" data-bs-target="#deleteUserModal" data-bs-toggle="modal">Delete User</button>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
 
-                        </tr>
-                    @endforeach
-                </tbody>
-                <tfoot>
+        <tfoot>
     </table>
 
             <footer class="text-center mt-4">
@@ -173,7 +190,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-primary" id="saveHours">Save changes</button>
                     </div>
                 </div>
             </div>
@@ -194,7 +211,7 @@
                         @csrf
                         <div class="form-group">
                             <label for="file">Select Excel File</label>
-                            <input type="file" class="form-control" id="file" name="file" required>
+                            <input type="file" class="form-control" id="import_file" name="import_file" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Import</button>
                     </form>
@@ -446,8 +463,13 @@
                             url: `/get-time-logged/${userId}`,
                             type: 'GET',
                             success: function(response) {
-                                // Update the time logged cell with the new data
-                                $(`.time-logged[data-user-id="${userId}"]`).text(response.time_logged);
+                                if (response.logged_in) {
+                                    // If the user is logged in, set Time Logged to N/A
+                                    $(`.time-logged[data-user-id="${userId}"]`).text('N/A');
+                                } else {
+     
+                                    $(`.time-logged[data-user-id="${userId}"]`).text(response.time_logged);
+                                }
                             },
                             error: function(xhr) {
                                 console.error('Time Logged Fetch Error:', xhr);
