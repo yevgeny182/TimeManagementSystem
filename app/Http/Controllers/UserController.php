@@ -121,34 +121,17 @@ public function destroy($id, Request $request){
 
     public function importUsers(Request $request) {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+            'import_file' => [
+                'required',
+                'file'
+            ],
         ]);
 
-        // Load the spreadsheet
-        $spreadsheet = IOFactory::load($request->file('file')->getRealPath());
-
-        // Get the first sheet
-        $sheet = $spreadsheet->getActiveSheet();
-        $rows = [];
-
-        // Iterate through each row in the sheet
-        foreach ($sheet->getRowIterator() as $row) {
-            $cellIterator = $row->getCellIterator();
-            $cellIterator->setIterateOnlyExistingCells(false); // This will allow us to retrieve all cells, even if they are empty
-
-            $data = [];
-            foreach ($cellIterator as $cell) {
-                $data[] = $cell->getValue(); // Get the value of each cell
-            }
-            $rows[] = $data; // Collect all rows for processing
-        }
-
-        // Create users using the UsersImport class
-        $import = new UsersImport();
-        $import->createUsers($rows);
-
+        Excel::import(new UsersImport, $request->file('import_file'));
         return redirect()->back()->with('success', 'Users imported successfully!');
     }
+
+   
 
     public function getTimeLogged($userId) {
         $user = User::find($userId);
@@ -163,6 +146,38 @@ public function destroy($id, Request $request){
         }
         return response()->json(['time_logged' => 'N/A']);
     }
-    
+
+   /*  public function assignHours(Request $request){
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'hours' => 'required|numeric|min:0', // Adjust as necessary
+        ]);
+
+            $user = User::find($request->user_id);
+            $user->time_remaining = $request->hours . ' hours'; // Store hours in a user-friendly format
+            $user->save();
+
+            return response()->json(['success' => true]);
+        } */
+
+        public function assignHours(Request $request) {
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'hours' => 'required|numeric|min:0', // Ensure hours is a valid number
+            ]);
+        
+            $user = User::find($request->user_id);
+            
+            // Convert hours to HH:MM:SS format
+            $hours = (int)$request->hours; // Convert input to integer
+            $timeRemaining = sprintf('%02d:00:00', $hours); // Format as HH:MM:SS
+        
+            $user->time_remaining = $timeRemaining; // Store time in HH:MM:SS format
+            $user->save();
+        
+            return response()->json(['success' => true]);
+        }
+
+                   
 
 }

@@ -4,21 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\UsersImport; // Import your import class
-use App\Models\User; // Assuming you have a User model
+use App\Imports\UsersImport; 
+use App\Models\User; 
 
-class UserImportController extends Controller
-{
-    public function import(Request $request)
-    {
-        // Validate the incoming request
+class UserImportController extends Controller{
+    public function import(Request $request){
         $request->validate([
-            'file' => 'required|mimes:xls,xlsx'
+            'import_file' => 'required|file|mimes:xlsx,csv',
         ]);
-
-        // Import the Excel file
-        Excel::import(new UsersImport, $request->file('file'));
-
-        return redirect()->back()->with('success', 'Users imported successfully.');
+    
+    try {
+        Excel::import(new UsersImport, $request->file('import_file'));
+        return redirect()->back()->with('success', 'Users imported successfully!');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Failed to import users: ' . $e->getMessage());
     }
+
+}
 }
